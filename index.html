@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لیست قیمت</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --text:#e9eeff;
+      --muted:#9aa6c0;
+      --line:rgba(138,180,255,0.16);
+      --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+      --btn:#1f2a55; --btn2:#24325f;
+      --shadow: 0 10px 30px rgba(0,0,0,0.28);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", Tahoma, Arial;
+      background: radial-gradient(1100px 700px at 20% 0%, #172457 0%, var(--bg) 58%);
+      color:var(--text);
+    }
+    .wrap{max-width:980px; margin:22px auto; padding:0 14px}
+
+    .topbar{
+      display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      padding:14px 14px;
+      border:1px solid var(--line); border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow);
+    }
+    .title{display:flex; flex-direction:column; gap:2px}
+    h1{font-size:16px; margin:0}
+    .sub{color:var(--muted); font-size:12px; line-height:1.6}
+    .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end}
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      font-size:12px; color:var(--muted);
+      user-select:none;
+    }
+    .dot{width:8px; height:8px; border-radius:50%}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+
+    .btn{
+      border:1px solid rgba(255,255,255,0.14);
+      background: var(--btn);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .btn:hover{background:var(--btn2)}
+    .btn.ghost{background:transparent}
+    .btn.ok{background: rgba(34,197,94,0.14); border-color: rgba(34,197,94,0.28)}
+    .btn.bad{background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.28)}
+    .btn.small{padding:7px 10px; border-radius:10px; font-weight:900}
+
+    .panel{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(0,0,0,0.18);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .filters{
+      padding:10px 14px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.08);
+    }
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .tab{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:12px;
+      user-select:none;
+    }
+    .tab.active{
+      color:var(--text);
+      border-color: rgba(138,180,255,0.35);
+      background: rgba(138,180,255,0.10);
+    }
+
+    input, select{
+      background: rgba(0,0,0,0.25);
+      border:1px solid rgba(255,255,255,0.14);
+      color:var(--text);
+      padding:9px 10px;
+      border-radius:12px;
+      outline:none;
+      min-width:120px;
+    }
+    input:focus, select:focus{
+      border-color: rgba(138,180,255,0.55);
+      box-shadow: 0 0 0 3px rgba(138,180,255,0.14);
+    }
+
+    .list{padding:12px 14px; display:grid; gap:10px}
+    .groupTitle{
+      margin-top:8px;
+      color:#dbe6ff;
+      font-weight:900;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+    }
+
+    .card{
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:14px;
+      background: rgba(0,0,0,0.14);
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+    }
+    .card:hover{background: rgba(255,255,255,0.03)}
+    .info{display:flex; flex-direction:column; gap:4px}
+    .name{font-weight:950}
+    .meta{font-size:12px; color:var(--muted)}
+    .priceBox{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+    .price{font-weight:950; font-size:15px}
+    .mini{font-size:11px; color:var(--muted)}
+    .xbtn{
+      display:none; /* فقط در حالت مدیریت */
+      padding:6px 10px; border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: transparent;
+      color: var(--muted);
+      cursor:pointer;
+      font-weight:900;
+    }
+    .xbtn:hover{color:var(--text); border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.10)}
+
+    /* Admin area */
+    .admin{
+      display:none;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.10);
+    }
+    .adminGrid{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; justify-content:space-between}
+    .adminLeft{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end}
+    label{font-size:12px; color:var(--muted)}
+    .note{margin-top:10px; color:var(--muted); font-size:12px; line-height:1.6}
+
+    /* Modal */
+    .backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); padding:14px; z-index:50;}
+    .modal{max-width:520px; margin:60px auto; border-radius:18px; overflow:hidden;}
+    .modal .head{
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-bottom:none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+    .modal .body{
+      padding:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,0.18);
+    }
+    .row2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media (max-width:560px){ .row2{grid-template-columns:1fr} .right{justify-content:flex-start} }
+    .foot{display:flex; gap:10px; justify-content:flex-end; margin-top:12px}
+    .err{color:#ffd1d1; font-size:12px; margin-top:8px; line-height:1.6}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="title">
+      <h1>لیست قیمت</h1>
+      <div class="sub" id="markupHint">قیمت نهایی با +۱۲٪ محاسبه می‌شود</div>
+    </div>
+
+    <div class="right">
+      <span class="pill">
+        <span class="dot warn" id="rateDot"></span>
+        <span id="rateText">نرخ: —</span>
+      </span>
+      <button class="btn ok" id="btnRefresh">بروزرسانی نرخ</button>
+      <button class="btn" id="btnManage">مدیریت</button>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <div class="filters">
+      <div class="tabs" id="tabs"></div>
+      <input id="search" placeholder="جستجو…" style="min-width:240px">
+    </div>
+
+    <div class="list" id="list"></div>
+
+    <!-- Admin -->
+    <div class="admin" id="admin">
+      <div class="adminGrid">
+        <div class="adminLeft">
+          <div>
+            <label>افزایش قیمت (%)</label><br>
+            <input id="markupPercent" type="number" step="0.1" value="12" style="min-width:110px">
+          </div>
+          <div>
+            <label>رُند</label><br>
+            <select id="rounding" style="min-width:140px">
+              <option value="0">بدون رُند</option>
+              <option value="100">100</option>
+              <option value="500">500</option>
+              <option value="1000" selected>1,000</option>
+              <option value="5000">5,000</option>
+              <option value="10000">10,000</option>
+            </select>
+          </div>
+          <div>
+            <label>نرخ دستی (اختیاری)</label><br>
+            <input id="manualRate" type="number" inputmode="decimal" placeholder="مثلاً 85000" style="min-width:190px">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end">
+          <button class="btn" id="btnApplyManual">اعمال نرخ دستی</button>
+          <button class="btn" id="btnAdd">+ افزودن آیتم</button>
+          <button class="btn bad" id="btnReset">ریست</button>
+          <button class="btn ghost" id="btnLogout">خروج</button>
+        </div>
+      </div>
+
+      <div class="note" id="rateMeta">—</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Add Item -->
+<div class="backdrop" id="addBackdrop">
+  <div class="modal">
+    <div class="head">
+      <div style="font-weight:950">افزودن آیتم</div>
+      <div class="sub">USD → با نرخ تبدیل می‌شود | TOMAN → ثابت</div>
+    </div>
+    <div class="body">
+      <div style="margin-bottom:10px">
+        <label>نام</label>
+        <input id="mName" placeholder="مثلاً سرویس جدید">
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>دسته‌بندی</label>
+          <select id="mCat">
+            <option>Telegram Premium</option>
+            <option>Change IP</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label>واحد</label>
+          <select id="mUnit">
+            <option value="USD">USD</option>
+            <option value="TOMAN">TOMAN</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>مقدار (USD یا تومان)</label>
+        <input id="mAmount" type="number" step="0.01" inputmode="decimal" placeholder="مثلاً 12 یا 80000">
+      </div>
+
+      <div class="foot">
+        <button class="btn ghost" id="btnAddClose">بستن</button>
+        <button class="btn ok" id="btnAddSave">ذخیره</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Admin Login -->
+<div class="backdrop" id="authBackdrop">
+  <div class="modal">
+    <div class="head">
+      <div style="font-weight:950">ورود به مدیریت</div>
+      <div class="sub">رمز مدیریت را وارد کنید.</div>
+    </div>
+    <div class="body">
+      <div style="margin-bottom:10px">
+        <label>رمز</label>
+        <input id="authPass" type="password" placeholder="رمز..." autocomplete="current-password">
+      </div>
+
+      <div class="err" id="authErr" style="display:none"></div>
+
+      <div class="foot">
+        <button class="btn ghost" id="btnAuthCancel">لغو</button>
+        <button class="btn ok" id="btnAuthOk">ورود</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ================================
+  // ✅ تنظیمات لاگین آنلاین (Worker)
+  // ================================
+  const AUTH_URL = "https://admin-login.tonovation.workers.dev/login"; // <-- همین درست است
+  const ADMIN_TOKEN_KEY = "admin_token_v1";
+  const ADMIN_EXP_KEY   = "admin_token_exp_v1";
+
+  // ================================
+  // ذخیره محلی
+  // ================================
+  const LS = {
+    settings: "clean_prices_settings_v5_worker_login",
+    items:    "clean_prices_items_v5_worker_login",
+  };
+
+  const DEFAULT_MARKUP = 12;
+
+  const state = {
+    rateToman: null,
+    rateMeta: "",
+    settings: { markup: DEFAULT_MARKUP, rounding: 1000, activeCat: "All", manage: false },
+    items: []
+  };
+
+  const el = (id) => document.getElementById(id);
+
+  const fmtToman = (n) => {
+    if (!Number.isFinite(n)) return "—";
+    return new Intl.NumberFormat("fa-IR").format(Math.round(n)) + " تومان";
+  };
+  const nowFa = () => new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date());
+  const safeNum = (v, fb=0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fb;
+  };
+  const roundTo = (v, step) => {
+    step = Number(step);
+    if (!step || step <= 0) return v;
+    return Math.round(v / step) * step;
+  };
+
+  const defaults = () => ([
+    // Telegram Premium (USD ثابت) — ترتیب: 12، 6، 3
+    { id: crypto.randomUUID(), cat: "Telegram Premium", name: "Premium - ۱۲ ماهه", unit: "USD", amount: 30 },
+    { id: crypto.randomUUID(), cat: "Telegram Premium", name: "Premium - ۶ ماهه",  unit: "USD", amount: 16 },
+    { id: crypto.randomUUID(), cat: "Telegram Premium", name: "Premium - ۳ ماهه",  unit: "USD", amount: 12 },
+
+    // Change IP (تومان ثابت)
+    { id: crypto.randomUUID(), cat: "Change IP", name: "یک کاربره - ۱ ماهه ۳۷ گیگ",  unit: "TOMAN", amount: 80000 },
+    { id: crypto.randomUUID(), cat: "Change IP", name: "یک کاربره - ۲ ماهه ۷۸ گیگ",  unit: "TOMAN", amount: 120000 },
+    { id: crypto.randomUUID(), cat: "Change IP", name: "یک کاربره - ۳ ماهه ۱۲۷ گیگ", unit: "TOMAN", amount: 200000 },
+    { id: crypto.randomUUID(), cat: "Change IP", name: "یک کاربره - ۶ ماهه ۳۰۰ گیگ", unit: "TOMAN", amount: 360000 }
+  ]);
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(LS.settings) || "null");
+      if (s && typeof s === "object") state.settings = { ...state.settings, ...s };
+    } catch {}
+    if (!Number.isFinite(Number(state.settings.markup))) state.settings.markup = DEFAULT_MARKUP;
+
+    try {
+      const items = JSON.parse(localStorage.getItem(LS.items) || "null");
+      state.items = Array.isArray(items) && items.length ? items : defaults();
+    } catch {
+      state.items = defaults();
+    }
+  }
+
+  function save() {
+    localStorage.setItem(LS.settings, JSON.stringify(state.settings));
+    localStorage.setItem(LS.items, JSON.stringify(state.items));
+  }
+
+  function setRatePill(type, text) {
+    el("rateDot").className = "dot " + type;
+    el("rateText").textContent = text;
+  }
+
+  function updateMarkupHint(){
+    const m = safeNum(state.settings.markup, DEFAULT_MARKUP);
+    el("markupHint").textContent = `قیمت نهایی با +${m}٪ محاسبه می‌شود`;
+  }
+
+  function calcFinalToman(item) {
+    const markup = safeNum(state.settings.markup, DEFAULT_MARKUP);
+    const rounding = safeNum(state.settings.rounding, 0);
+
+    let base = null;
+    if (String(item.unit).toUpperCase() === "TOMAN") {
+      base = safeNum(item.amount, NaN);
+    } else {
+      const amt = safeNum(item.amount, NaN);
+      if (!Number.isFinite(amt) || !Number.isFinite(state.rateToman)) return { base:null, final:null };
+      base = amt * state.rateToman;
+    }
+    if (!Number.isFinite(base)) return { base:null, final:null };
+
+    const final = roundTo(base * (1 + markup/100), rounding);
+    return { base, final };
+  }
+
+  function categories() {
+    const set = new Set(["All", "Telegram Premium", "Change IP", "Other"]);
+    for (const it of state.items) set.add(it.cat || "Other");
+    const arr = Array.from(set);
+    return ["All", ...arr.filter(x => x !== "All").sort((a,b) => a.localeCompare(b, "fa"))];
+  }
+
+  function premiumOrderWeight(name) {
+    const s = String(name || "");
+    if (/(۱۲|12)\s*ماه/.test(s)) return 1;
+    if (/(۶|6)\s*ماه/.test(s))  return 2;
+    if (/(۳|3)\s*ماه/.test(s))  return 3;
+    return 99;
+  }
+
+  function renderTabs() {
+    const tabs = el("tabs");
+    tabs.innerHTML = "";
+    for (const c of categories()) {
+      const b = document.createElement("div");
+      b.className = "tab" + (state.settings.activeCat === c ? " active" : "");
+      b.textContent = (c === "All") ? "همه" : c;
+      b.addEventListener("click", () => {
+        state.settings.activeCat = c;
+        save();
+        render();
+        renderTabs();
+      });
+      tabs.appendChild(b);
+    }
+  }
+
+  // ================================
+  // ✅ مدیریت توکن ادمین
+  // ================================
+  function hasValidAdminSession() {
+    const token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+    const exp = Number(sessionStorage.getItem(ADMIN_EXP_KEY) || "0");
+    if (!token) return false;
+    if (!exp) return true; // اگر exp نبود، صرفاً وجود توکن
+    const now = Math.floor(Date.now() / 1000);
+    return exp > now;
+  }
+
+  function setAdminSession(token, exp) {
+    sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+    if (exp) sessionStorage.setItem(ADMIN_EXP_KEY, String(exp));
+  }
+
+  function clearAdminSession() {
+    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    sessionStorage.removeItem(ADMIN_EXP_KEY);
+  }
+
+  function isAdminOpen() {
+    return state.settings.manage && hasValidAdminSession();
+  }
+
+  function renderAdminUI() {
+    const show = isAdminOpen();
+    el("admin").style.display = show ? "block" : "none";
+    document.querySelectorAll(".xbtn").forEach(b => b.style.display = show ? "inline-block" : "none");
+    el("btnManage").textContent = show ? "بستن مدیریت" : "مدیریت";
+  }
+
+  function render() {
+    const list = el("list");
+    list.innerHTML = "";
+
+    const q = (el("search").value || "").trim().toLowerCase();
+    const activeCat = state.settings.activeCat;
+
+    let items = state.items.slice();
+    if (activeCat !== "All") items = items.filter(x => (x.cat || "Other") === activeCat);
+    if (q) items = items.filter(x => (x.name || "").toLowerCase().includes(q) || (x.cat || "").toLowerCase().includes(q));
+
+    items.sort((a,b) => {
+      const ca = (a.cat || "Other");
+      const cb = (b.cat || "Other");
+      const c = ca.localeCompare(cb, "fa");
+      if (c !== 0) return c;
+
+      if (ca === "Telegram Premium") {
+        const wa = premiumOrderWeight(a.name);
+        const wb = premiumOrderWeight(b.name);
+        if (wa !== wb) return wa - wb;
+      }
+
+      return (a.name||"").localeCompare((b.name||""), "fa");
+    });
+
+    const grouped = (activeCat === "All");
+    let current = null;
+
+    const showAdminBits = isAdminOpen();
+
+    for (const it of items) {
+      const cat = it.cat || "Other";
+      if (grouped && cat !== current) {
+        current = cat;
+        const gt = document.createElement("div");
+        gt.className = "groupTitle";
+        gt.textContent = cat;
+        list.appendChild(gt);
+      }
+
+      const { base, final } = calcFinalToman(it);
+      const unit = String(it.unit).toUpperCase();
+
+      // ✅ صفحه اصلی: هیچ نرخ/دلاری نمایش داده نشه
+      const metaMain = unit === "USD" ? "دلاری" : "تومان ثابت";
+      const metaAdmin = unit === "USD" ? `USD: ${it.amount}` : `تومان: ${it.amount}`;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="info">
+          <div class="name">${it.name}</div>
+          <div class="meta">${showAdminBits ? metaAdmin : metaMain}</div>
+        </div>
+
+        <div class="priceBox">
+          <div class="price">${Number.isFinite(final) ? fmtToman(final) : "—"}</div>
+
+          <div class="mini" style="display:${showAdminBits ? "block" : "none"}">
+            ${Number.isFinite(base) ? ("پایه: " + fmtToman(base)) : (unit==="USD" ? "برای USD نرخ لازم است" : "")}
+          </div>
+
+          <button class="xbtn" data-del="${it.id}">حذف</button>
+        </div>
+      `;
+      list.appendChild(card);
+    }
+
+    renderAdminUI();
+    updateMarkupHint();
+    save();
+  }
+
+  // ================================
+  // ✅ نرخ Bitpin
+  // ================================
+  const TICKERS_URL = "https://api.bitpin.org/api/v1/mkt/tickers/";
+
+  function normalizeTickers(data) {
+    if (Array.isArray(data)) return data;
+    const candidate = data?.results || data?.data || data?.tickers;
+    if (Array.isArray(candidate)) return candidate;
+    if (data && typeof data === "object") {
+      const entries = Object.entries(data);
+      const looksLikeMap = entries.some(([k]) => /_IR[RT]$/i.test(k));
+      if (looksLikeMap) return entries.map(([symbol, payload]) => ({ symbol, ...payload }));
+    }
+    return [];
+  }
+
+  function pickNumber(obj, keys) {
+    for (const k of keys) {
+      const v = obj?.[k];
+      const n = Number(String(v ?? "").replaceAll(",", ""));
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    return null;
+  }
+
+  function extractUsdt(tickers) {
+    const bySym = (sym) => tickers.find(t => String(t.symbol ?? t.market ?? "").toUpperCase() === sym);
+    const t = bySym("USDT_IRT") || bySym("USDT_IRR");
+    if (!t) throw new Error("USDT_IRT/USDT_IRR not found");
+
+    const last = pickNumber(t, ["last","last_price","price","close","latest"]);
+    const buy  = pickNumber(t, ["buy","bid","best_buy","bestBid","best_bid"]);
+    const sell = pickNumber(t, ["sell","ask","best_sell","bestAsk","best_ask"]);
+
+    const raw = last || ((buy && sell) ? (buy + sell) / 2 : null) || buy || sell;
+    if (!raw) throw new Error("No valid price field");
+
+    const sym = String(t.symbol ?? "").toUpperCase();
+    const toman = sym.endsWith("_IRR") ? raw / 10 : raw;
+    return { toman, sym };
+  }
+
+  async function fetchRate() {
+    setRatePill("warn", "نرخ: در حال دریافت…");
+    try {
+      const res = await fetch(TICKERS_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      const data = await res.json();
+      const tickers = normalizeTickers(data);
+      const out = extractUsdt(tickers);
+
+      state.rateToman = out.toman;
+      state.rateMeta = `Bitpin · ${out.sym} · ${nowFa()}`;
+      el("rateMeta").textContent = state.rateMeta;
+
+      setRatePill("ok", `نرخ: ${fmtToman(out.toman)}`);
+      render();
+    } catch (e) {
+      state.rateToman = null;
+      state.rateMeta = `خطا در دریافت نرخ · ${nowFa()}`;
+      el("rateMeta").textContent = state.rateMeta;
+
+      setRatePill("bad", "نرخ: خطا (برای USD لازم است)");
+      render();
+    }
+  }
+
+  // ================================
+  // ✅ مودال افزودن
+  // ================================
+  function openAddModal() {
+    if (!isAdminOpen()) return;
+    el("mName").value = "";
+    el("mCat").value = "Other";
+    el("mUnit").value = "USD";
+    el("mAmount").value = "";
+    el("addBackdrop").style.display = "block";
+    setTimeout(() => el("mName").focus(), 50);
+  }
+  function closeAddModal() { el("addBackdrop").style.display = "none"; }
+  function saveAddModal() {
+    if (!isAdminOpen()) return;
+
+    const name = (el("mName").value || "").trim();
+    const cat = (el("mCat").value || "Other").trim() || "Other";
+    const unit = String(el("mUnit").value || "USD").toUpperCase();
+    const amount = Number(el("mAmount").value);
+
+    if (!name) return alert("نام را وارد کن.");
+    if (!["USD","TOMAN"].includes(unit)) return alert("واحد نامعتبر است.");
+    if (!Number.isFinite(amount) || amount <= 0) return alert("مقدار معتبر نیست.");
+
+    state.items.unshift({ id: crypto.randomUUID(), cat, name, unit, amount });
+    save();
+    renderTabs();
+    render();
+    closeAddModal();
+  }
+
+  // ================================
+  // ✅ مودال لاگین آنلاین
+  // ================================
+  function openAuthModal() {
+    el("authErr").style.display = "none";
+    el("authErr").textContent = "";
+    el("authPass").value = "";
+    el("authBackdrop").style.display = "block";
+    setTimeout(() => el("authPass").focus(), 50);
+  }
+  function closeAuthModal() { el("authBackdrop").style.display = "none"; }
+
+  function setAuthError(msg) {
+    el("authErr").textContent = msg;
+    el("authErr").style.display = "block";
+  }
+
+  async function onlineLogin(password) {
+    const res = await fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok && data?.ok, data, status: res.status };
+  }
+
+  async function doLogin() {
+    const pass = (el("authPass").value || "").trim();
+    if (!pass) return setAuthError("رمز را وارد کنید.");
+
+    try {
+      const r = await onlineLogin(pass);
+      if (!r.ok || !r.data?.token) {
+        if (r.status === 401) return setAuthError("رمز اشتباه است.");
+        return setAuthError("خطا در ارتباط یا تنظیمات Worker. دوباره تلاش کن.");
+      }
+
+      setAdminSession(r.data.token, r.data.exp);
+      state.settings.manage = true;
+      save();
+      render();
+      closeAuthModal();
+    } catch (e) {
+      setAuthError("مشکل شبکه یا CORS. Worker باید هدرهای CORS را درست بدهد.");
+    }
+  }
+
+  // ================================
+  // ✅ رویدادها
+  // ================================
+  el("btnRefresh").addEventListener("click", fetchRate);
+  el("search").addEventListener("input", () => render());
+
+  // دکمه مدیریت
+  el("btnManage").addEventListener("click", () => {
+    // اگر پنل باز است: ببند
+    if (isAdminOpen()) {
+      state.settings.manage = false;
+      save(); render();
+      return;
+    }
+
+    // اگر توکن معتبر داریم: باز کن
+    if (hasValidAdminSession()) {
+      state.settings.manage = true;
+      save(); render();
+      return;
+    }
+
+    // وگرنه: لاگین
+    openAuthModal();
+  });
+
+  // خروج از مدیریت
+  el("btnLogout").addEventListener("click", () => {
+    clearAdminSession();
+    state.settings.manage = false;
+    save();
+    render();
+  });
+
+  // تنظیمات مدیریت
+  el("markupPercent").addEventListener("input", () => {
+    if (!isAdminOpen()) return;
+    state.settings.markup = safeNum(el("markupPercent").value, DEFAULT_MARKUP);
+    save(); render();
+  });
+
+  el("rounding").addEventListener("change", () => {
+    if (!isAdminOpen()) return;
+    state.settings.rounding = safeNum(el("rounding").value, 1000);
+    save(); render();
+  });
+
+  el("btnApplyManual").addEventListener("click", () => {
+    if (!isAdminOpen()) return;
+    const m = Number(el("manualRate").value);
+    if (!Number.isFinite(m) || m <= 0) return alert("نرخ دستی معتبر نیست.");
+    state.rateToman = m;
+    state.rateMeta = `Manual · ${nowFa()}`;
+    el("rateMeta").textContent = state.rateMeta;
+    setRatePill("ok", `نرخ: ${fmtToman(m)}`);
+    render();
+  });
+
+  // افزودن آیتم
+  el("btnAdd").addEventListener("click", openAddModal);
+  el("btnAddClose").addEventListener("click", closeAddModal);
+  el("btnAddSave").addEventListener("click", saveAddModal);
+  el("addBackdrop").addEventListener("click", (e) => { if (e.target === el("addBackdrop")) closeAddModal(); });
+
+  // حذف آیتم (فقط در مدیریت)
+  document.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.("[data-del]");
+    if (!btn) return;
+    if (!isAdminOpen()) return;
+    const id = btn.getAttribute("data-del");
+    state.items = state.items.filter(x => x.id !== id);
+    save();
+    renderTabs();
+    render();
+  });
+
+  // ریست
+  el("btnReset").addEventListener("click", () => {
+    if (!isAdminOpen()) return;
+    if (!confirm("ریست شود؟ (آیتم‌های پیش‌فرض برمی‌گردند)")) return;
+
+    localStorage.removeItem(LS.settings);
+    localStorage.removeItem(LS.items);
+
+    state.settings = { markup: DEFAULT_MARKUP, rounding: 1000, activeCat: "All", manage: true };
+    state.items = defaults();
+
+    el("markupPercent").value = String(DEFAULT_MARKUP);
+    el("rounding").value = "1000";
+    el("search").value = "";
+
+    save();
+    renderTabs();
+    render();
+    fetchRate();
+  });
+
+  // مودال لاگین
+  el("btnAuthCancel").addEventListener("click", closeAuthModal);
+  el("authBackdrop").addEventListener("click", (e) => { if (e.target === el("authBackdrop")) closeAuthModal(); });
+  el("btnAuthOk").addEventListener("click", doLogin);
+  el("authPass").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+
+  // ================================
+  // Init
+  // ================================
+  load();
+  // همیشه مدیریت پیش‌فرض بسته باشد
+  state.settings.manage = false;
+
+  el("markupPercent").value = String(state.settings.markup ?? DEFAULT_MARKUP);
+  el("rounding").value = String(state.settings.rounding ?? 1000);
+
+  updateMarkupHint();
+  renderTabs();
+  render();
+  fetchRate();
+})();
+</script>
+</body>
+</html>
