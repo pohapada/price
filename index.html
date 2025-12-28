@@ -395,7 +395,7 @@
 
   function updateMarkupHint(){
     const m = safeNum(state.settings.markup, DEFAULT_MARKUP);
-    el("markupHint").textContent = `قیمت نهایی با +${m}٪ محاسبه می‌شود`;
+    el("markupHint").textContent = "";  // حذف تمام محتویات
   }
 
   function calcFinalToman(item) {
@@ -826,4 +826,5 @@
 </script>
 </body>
 </html>
+
 
