@@ -368,20 +368,26 @@
     { id: crypto.randomUUID(), cat: "Change IP", name: "یک کاربره - ۶ ماهه ۳۰۰ گیگ", unit: "TOMAN", amount: 380000 }
   ]);
 
-  function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(LS.settings) || "null");
-      if (s && typeof s === "object") state.settings = { ...state.settings, ...s };
-    } catch {}
-    if (!Number.isFinite(Number(state.settings.markup))) state.settings.markup = DEFAULT_MARKUP;
+function calcFinalToman(item) {
+    const markup = safeNum(state.settings.markup, DEFAULT_MARKUP);
+    const rounding = safeNum(state.settings.rounding, 0);
 
-    try {
-      const items = JSON.parse(localStorage.getItem(LS.items) || "null");
-      state.items = Array.isArray(items) && items.length ? items : defaults();
-    } catch {
-      state.items = defaults();
+    let base = null;
+    // بررسی واحد
+    if (String(item.unit).toUpperCase() === "TOMAN") {
+        base = safeNum(item.amount, NaN);
+    } else {
+        const amt = safeNum(item.amount, NaN);
+        if (!Number.isFinite(amt) || !Number.isFinite(state.rateToman)) return { base: null, final: null };
+        base = amt * state.rateToman;
     }
-  }
+    if (!Number.isFinite(base)) return { base: null, final: null };
+
+    // اعمال رند کردن
+    const final = roundTo(base * (1 + markup / 100), rounding);
+    return { base, final };
+}
+
 
   function save() {
     localStorage.setItem(LS.settings, JSON.stringify(state.settings));
@@ -827,3 +833,4 @@
 </script>
 </body>
 </html>
+
