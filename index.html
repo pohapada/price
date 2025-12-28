@@ -184,7 +184,7 @@
   <div class="topbar">
     <div class="title">
       <h1>لیست قیمت</h1>
-     <div class="sub" id="markupHint"></div>
+      <div class="sub" id="markupHint"></div>
     </div>
 
     <div class="right">
@@ -600,8 +600,9 @@
 
   async function fetchRate() {
     setRatePill("warn", "نرخ: در حال دریافت…");
+    const cacheBuster = new Date().getTime();  // اضافه کردن پارامتر زمان برای جلوگیری از کش
     try {
-      const res = await fetch(TICKERS_URL, { cache: "no-store" });
+      const res = await fetch(`${TICKERS_URL}?cache_bust=${cacheBuster}`, { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status);
 
       const data = await res.json();
@@ -826,7 +827,3 @@
 </script>
 </body>
 </html>
-
-
-
-
